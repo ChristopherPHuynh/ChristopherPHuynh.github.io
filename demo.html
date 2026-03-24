@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Player Data Table</title>
+    <title>Player Data Dashboard</title>
 
     <style>
         body {
@@ -29,14 +29,17 @@
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
-            text-align: left;
+            text-align: center;
         }
 
         th {
             background-color: #2563eb;
             color: white;
-            position: sticky;
-            top: 0;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background-color: #1d4ed8;
         }
 
         tr:nth-child(even) {
@@ -46,35 +49,74 @@
 </head>
 <body>
 
-<h1>Player Data (Excel View)</h1>
+<h1>Player Data Dashboard</h1>
+<p>Click any column header to sort</p>
 
 <div class="table-container">
     <table id="csvTable"></table>
 </div>
 
 <script>
+let tableData = [];
+let headers = [];
+let sortDirection = {}; // track asc/desc
+
 fetch("player_data.csv")
     .then(response => response.text())
     .then(data => {
-        const rows = data.split("\n").map(row => row.split(","));
-        const table = document.getElementById("csvTable");
+        const rows = data.trim().split("\n").map(row => row.split(","));
 
-        rows.forEach((row, rowIndex) => {
-            const tr = document.createElement("tr");
+        headers = rows[0];
+        tableData = rows.slice(1);
 
-            row.forEach(cell => {
-                const cellElement = document.createElement(rowIndex === 0 ? "th" : "td");
-                cellElement.textContent = cell;
-                tr.appendChild(cellElement);
-            });
-
-            table.appendChild(tr);
-        });
-    })
-    .catch(error => {
-        document.body.innerHTML += "<p style='color:red;'>Error loading CSV</p>";
-        console.error(error);
+        renderTable();
     });
+
+function renderTable() {
+    const table = document.getElementById("csvTable");
+    table.innerHTML = "";
+
+    // Header row
+    const headerRow = document.createElement("tr");
+
+    headers.forEach((header, colIndex) => {
+        const th = document.createElement("th");
+        th.textContent = header;
+
+        th.addEventListener("click", () => sortTable(colIndex));
+
+        headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    // Data rows
+    tableData.forEach(row => {
+        const tr = document.createElement("tr");
+
+        row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+        });
+
+        table.appendChild(tr);
+    });
+}
+
+function sortTable(colIndex) {
+    // toggle direction
+    sortDirection[colIndex] = !sortDirection[colIndex];
+
+    tableData.sort((a, b) => {
+        const valA = parseFloat(a[colIndex]);
+        const valB = parseFloat(b[colIndex]);
+
+        return sortDirection[colIndex] ? valA - valB : valB - valA;
+    });
+
+    renderTable();
+}
 </script>
 
 </body>
