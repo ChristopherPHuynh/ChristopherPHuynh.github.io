@@ -1,34 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CSV Test</title>
+    <title>Player Data Table</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9fafb;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 800px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2563eb;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 
-<h1>CSV Debug Test</h1>
+<h1>Player Data (Excel View)</h1>
 
-<p id="status">Loading...</p>
+<div class="table-container">
+    <table id="csvTable"></table>
+</div>
 
 <script>
 fetch("player_data.csv")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("File not found");
-        }
-        return response.text();
-    })
+    .then(response => response.text())
     .then(data => {
-        document.getElementById("status").innerText = "CSV loaded successfully ✅";
+        const rows = data.split("\n").map(row => row.split(","));
+        const table = document.getElementById("csvTable");
 
-        console.log("CSV CONTENT:");
-        console.log(data);
+        rows.forEach((row, rowIndex) => {
+            const tr = document.createElement("tr");
 
-        alert("CSV loaded successfully!");
+            row.forEach(cell => {
+                const cellElement = document.createElement(rowIndex === 0 ? "th" : "td");
+                cellElement.textContent = cell;
+                tr.appendChild(cellElement);
+            });
+
+            table.appendChild(tr);
+        });
     })
     .catch(error => {
-        document.getElementById("status").innerText = "ERROR loading CSV ❌";
+        document.body.innerHTML += "<p style='color:red;'>Error loading CSV</p>";
         console.error(error);
-        alert("Error loading CSV");
     });
 </script>
 
